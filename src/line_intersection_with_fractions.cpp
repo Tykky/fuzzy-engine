@@ -7,8 +7,8 @@ using namespace std;
 
 struct fraction
 {
-    int numerator   = 0;
-    int denominator = 1;
+    long numerator   = 0;
+    long denominator = 1;
 };
 
 struct point
@@ -208,13 +208,14 @@ std::optional<point> find_intersection(line_segment seg_a, line_segment seg_b)
     fraction y3 = seg_b.p1.y;
     fraction y4 = seg_b.p2.y;
 
-    // Compute intersection points
-    fraction px_numerator = {((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4))};
-    fraction px_denominator = {((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4))};
+    // Compute intersection points, simplifying fractions here helps avoiding integer overflow later down the line
+    fraction px_numerator   = simplify_fraction({((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4))});
+    fraction px_denominator = simplify_fraction({((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4))});
     
-    fraction py_numerator = {((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4))};
-    fraction py_denominator = {((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4))};
+    fraction py_numerator   = simplify_fraction({((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4))});
+    fraction py_denominator = simplify_fraction({((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4))});
 
+    // When no solution is found
     if (px_denominator.numerator == 0 || py_denominator.numerator == 0)
         return {};
 
@@ -222,7 +223,6 @@ std::optional<point> find_intersection(line_segment seg_a, line_segment seg_b)
     fraction py = py_numerator / py_denominator;
 
     return {{simplify_fraction(px), simplify_fraction(py)}};
-
 }
 
 string IntersectingLines(string strArr[], int arrLength) 
@@ -244,8 +244,7 @@ int main()
 {
     string input[] = {"(9/1,-2/1)","(-2/1,9/1)","(3/1,4/1)","(10/1,11/1)"};
     string binput[] = {"(1,2)", "(3,4)", "(-5, -6)", "(-7, -8)"};
-    string cinput[] = {};
-
-    auto res = IntersectingLines(input, sizeof(input) / sizeof(*input));
+    string cinput[] = {"(5, 2)", "(1, 10/7)", "(-5/2, -9/18)", "(1, 15/9)"};
+    auto res = IntersectingLines(cinput, sizeof(cinput) / sizeof(*cinput));
     cout << res << "\n";
 }
